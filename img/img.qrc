@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/img">
+        <file>hand_logo.jpg</file>
+        <file>icons8-галочка-64.png</file>
+        <file>icons8-главная-filled-50.png</file>
+        <file>icons8-горизонтальный-микшер-настроек-filled-50.png</file>
+        <file>icons8-меню-24.png</file>
+        <file>icons8-свернуть-32.png</file>
+        <file>icons8-сервисы-50.png</file>
+        <file>icons8-сервисы-filled-50.png</file>
+        <file>icons8-удалить-32.png</file>
+        <file>icons8-удалить-64.png</file>
+        <file>img.qrc</file>
+        <file>ActionDelete.png</file>
+        <file>ChangeAction.png</file>
+        <file>icons8_portav.png</file>
+        <file>icons8_portnotan.png</file>
+        <file>icons8_connect.png</file>
+        <file>icons8_disconnect.png</file>
+        <file>icons8-сортировать-слева-направо-64.png</file>
+        <file>icons8-сортировать-справа-налево-64.png</file>
+    </qresource>
+</RCC>
