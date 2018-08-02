@@ -20,6 +20,8 @@
 #include <QGraphicsScene>
 #include <QGraphicsView>
 #include <QGraphicsItem>
+#include <QTimer>
+#include "voicedata.h"
 
 class SignalGraphics : public QWidget
 {
@@ -38,6 +40,7 @@ public slots:
     void push_graph_left_arrow();
     void push_graph_right_arrow();
     void WidgetResized();
+    void RedrawGraphic();
 
 
 private:
@@ -48,8 +51,10 @@ private:
     QVBoxLayout* layout_widget;
     QSpacerItem* down_spacer;
     QSerialPort* serial_port;
-    ComPort* port;
+    ComPort* port;  //Виджет ком порта (верхняя часть)
     QThread* thread;
+    QTimer* timer;  //Отрисовка за счет таймера
+    VoiceData* voice_data;
 
     //Для вывода графики
     QGraphicsView* graph_view;

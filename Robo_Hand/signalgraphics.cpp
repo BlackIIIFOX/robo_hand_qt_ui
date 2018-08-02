@@ -3,6 +3,7 @@
 
 #include <QDebug>
 
+
 SignalGraphics::SignalGraphics(QWidget *parent) : QWidget(parent)
 {
     this->setMinimumSize(750,484);
@@ -22,6 +23,13 @@ SignalGraphics::SignalGraphics(QWidget *parent) : QWidget(parent)
 
     connect(graph_left_arrow,SIGNAL(clicked(bool)),this,SLOT(push_graph_left_arrow()));
     connect(graph_left_arrow,SIGNAL(clicked(bool)),this,SLOT(push_graph_right_arrow()));
+
+    voice_data = new VoiceData(20000,10);
+
+    timer = new QTimer(this);
+    connect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
+    timer->start(16);
+
     //PrintBaseScene();
 }
 
@@ -215,3 +223,8 @@ void SignalGraphics::WidgetResized()
 
 }
 
+
+void SignalGraphics::RedrawGraphic()
+{
+
+}

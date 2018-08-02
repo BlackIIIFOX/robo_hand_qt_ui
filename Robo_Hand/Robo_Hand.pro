@@ -36,7 +36,8 @@ SOURCES += \
     popmenucommand.cpp \
     signalgraphics.cpp \
     comconnectwidget.cpp \
-    comport.cpp
+    comport.cpp \
+    voicedata.cpp
 
 HEADERS += \
         robohand.h \
@@ -50,7 +51,8 @@ HEADERS += \
     popmenucommand.h \
     signalgraphics.h \
     comconnectwidget.h \
-    comport.h
+    comport.h \
+    voicedata.h
 
 FORMS += \
         robohand.ui
