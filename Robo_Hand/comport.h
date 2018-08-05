@@ -3,13 +3,15 @@
 
 #include <QObject>
 #include <QSerialPort>
+#include "voicedata.h"
 
 class ComPort : public QObject
 {
     Q_OBJECT
 public:
-    explicit ComPort(QObject *parent = nullptr);
+    explicit ComPort(VoiceData* object_voice_data = nullptr, QObject *parent = nullptr);
     QSerialPort* port;
+    void SetVoiceData(VoiceData* object_voice_data);
     ~ComPort();
 
 signals:
@@ -19,6 +21,8 @@ public slots:
     void PortDisconnect();
     void serialReceived();
 
+private:
+    VoiceData* voice_data;
 };
 
 #endif // COMPORT_H

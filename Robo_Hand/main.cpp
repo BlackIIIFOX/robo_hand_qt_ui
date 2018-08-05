@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     //w.show();
 
 
-    SignalGraphics graph;
+    SignalGraphics graph(1000,8000);
 //    QThread* thread = new QThread();
 //    graph.moveToThread(thread);
 //    thread->start();
@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
             QApplication::desktop()->availableGeometry()
         )
     );
+    graph.setMinimumSize(QApplication::desktop()->width()/3,QApplication::desktop()->height()/2);
     graph.show();
     return a.exec();
 }

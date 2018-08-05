@@ -11,7 +11,8 @@ public:
     explicit VoiceData(uint freq, uint time,QObject *parent = nullptr);
     void AddData(uint ADC_Value);
     bool GetStatusBusy();
-    void GetData();
+    void GetData(QList<uint>* InputList, uint start_time_ms);   //Берем от конца до какого то времени
+    void GetData(QList<uint>* InputList, uint start_time_ms, uint stop_time_ms);  //Берем интервал
 
 signals:
 

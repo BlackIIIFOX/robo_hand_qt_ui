@@ -23,11 +23,20 @@
 #include <QTimer>
 #include "voicedata.h"
 
+struct GraphCoord
+{
+    int x_start,x_stop; //Начальная и конечная точка по координате x
+    int y_high,y_low;   //Верхняя и нижняя точка по координате y
+    double step_x, step_y; //Шаг для точек по координатам x и y
+};
+
+
+
 class SignalGraphics : public QWidget
 {
     Q_OBJECT
 public:
-    explicit SignalGraphics(QWidget *parent = nullptr);
+    explicit SignalGraphics(int SetTimeDisplay = 1000,int freque = 20000,QWidget *parent = nullptr);
 
 protected:
     void paintEvent(QPaintEvent *pe);
@@ -47,6 +56,7 @@ private:
     void PrintBaseScene();
     void PaintBaseItemInScene();
     void CreateWidget();
+    void CalcGraphValue(int x_start, int x_stop, int y_high, int y_low);
     ComConnect* com;
     QVBoxLayout* layout_widget;
     QSpacerItem* down_spacer;
@@ -55,6 +65,12 @@ private:
     QThread* thread;
     QTimer* timer;  //Отрисовка за счет таймера
     VoiceData* voice_data;
+    QList<uint>* DataList;  //Список для хранения выводимых значений
+    int TimeDisplayMs;      //Длительность сигнала выводимое на экран в мс
+    int ADCFreque;          //Частота АЦП
+    GraphCoord coordinats;
+
+
 
     //Для вывода графики
     QGraphicsView* graph_view;
@@ -74,6 +90,8 @@ private:
     QGraphicsLineItem* HLineGraph;
     QGraphicsLineItem* HLeftArrow;
     QGraphicsLineItem* HRightArrow;
+    QList<QGraphicsLineItem*>* ListLine;
+
 
 
 };

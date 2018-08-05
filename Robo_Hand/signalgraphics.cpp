@@ -4,11 +4,12 @@
 #include <QDebug>
 
 
-SignalGraphics::SignalGraphics(QWidget *parent) : QWidget(parent)
+SignalGraphics::SignalGraphics(int SetTimeDisplay, int freque, QWidget *parent) : QWidget(parent)
 {
-    this->setMinimumSize(750,484);
+    //this->setMaximumSize()
+    //this->setMinimumSize(750,484);
     //this->setStyleSheet("background-color: #0f0");
-    com = new ComConnect(this);
+    com = new ComConnect();
     port = new ComPort();
 
     thread = new QThread();//Создаем поток для порта платы
@@ -19,18 +20,39 @@ SignalGraphics::SignalGraphics(QWidget *parent) : QWidget(parent)
     connect(com,SIGNAL(PortConnectReques(QString)),port,SLOT(PortConnect(QString)));
     connect(com,SIGNAL(PortDisconncetReques()),port,SLOT(PortDisconnect()));
 
+    TimeDisplayMs = SetTimeDisplay;
+    ADCFreque = freque;
     CreateWidget();
 
     connect(graph_left_arrow,SIGNAL(clicked(bool)),this,SLOT(push_graph_left_arrow()));
     connect(graph_left_arrow,SIGNAL(clicked(bool)),this,SLOT(push_graph_right_arrow()));
 
-    voice_data = new VoiceData(20000,10);
+    //voice_data = new VoiceData(20000,10);
+    voice_data = new VoiceData(ADCFreque,10);
+
+    thread = new QThread();
+    voice_data->moveToThread(thread);
+    thread->start();
+
+    DataList = new QList<uint>;
+    port->SetVoiceData(voice_data);
+
+    thread = new QThread();
+    graph_view->moveToThread(thread);
+    //graph_scene->moveToThread(thread);
+    thread->start();
+//    voice_data->AddData(1800);
+//    voice_data->AddData(2200);
+//    voice_data->AddData(2350);
+//    voice_data->AddData(1650);
+//    voice_data->AddData(1900);
+//    voice_data->AddData(1950);
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
+    //timer->start(1000);
     timer->start(16);
-
-    //PrintBaseScene();
+    //timer->start(32);
 }
 
 void SignalGraphics::CreateWidget()
@@ -172,8 +194,20 @@ void SignalGraphics::PaintBaseItemInScene()
     graph_scene->addItem(HRightArrow);
 
 
+    //================================================
+    //======Созданем список линий для графики=========
+    //================================================
+    ListLine = new  QList<QGraphicsLineItem*>;
+    for (int i = 0; i<ADCFreque*TimeDisplayMs/1000; i++)
+    {
+        QPen pen_line(Qt::black,2);
+        QGraphicsLineItem* line = new QGraphicsLineItem();
+        line->setPen(pen_line);
+        ListLine->append(line);
+        graph_scene->addItem(line);
+    }
 
-
+    //ListPoint->append();
 
 }
 
@@ -195,6 +229,18 @@ void SignalGraphics::push_graph_right_arrow()
 
 }
 
+void SignalGraphics::CalcGraphValue(int x_start, int x_stop, int y_high, int y_low)
+{
+    coordinats.x_start = x_start;
+    coordinats.x_stop = x_stop;
+    coordinats.y_high = y_high;
+    coordinats.y_low = y_low;
+    coordinats.step_x = (((double)TimeDisplayMs/(double)ADCFreque)*(coordinats.x_stop - coordinats.x_start))/TimeDisplayMs;
+    coordinats.step_y = (coordinats.y_low - coordinats.y_high)/1500.0;
+}
+
+
+
 
 void SignalGraphics::WidgetResized()
 {
@@ -211,6 +257,8 @@ void SignalGraphics::WidgetResized()
             ZeroHLineX = 20, ZeroHLineY = len_height-20,
             EndHLineX = len_width-20, EndHLineY = len_height-20;
 
+    CalcGraphValue(ZeroHLineX, EndHLineX, ZeroVLineY, EndVLineY);
+
     //Перерисовка основных линий графика
     VLineGraph->setLine(QLine(ZeroVLineX, ZeroVLineY, EndVLineX, EndVLineY ));
     HLineGraph->setLine(QLine(ZeroHLineX, ZeroHLineY, EndHLineX, EndHLineY ));
@@ -223,8 +271,56 @@ void SignalGraphics::WidgetResized()
 
 }
 
+//#include <QTime>
+//QTime t;
+//int count_data_redraw = 0;
 
 void SignalGraphics::RedrawGraphic()
 {
 
+    //    if(count_data_redraw == 0)
+    //    {
+    //        t.start();
+    //        t.restart();
+    //    }
+    DataList->clear();
+    while(voice_data->GetStatusBusy());
+    voice_data->GetData(DataList, TimeDisplayMs);
+
+    int count_list = DataList->count();
+    //qDebug()<<count_list;
+    for (int i = 0; i < count_list-1; i++)
+    {
+
+        //coordinats.step_x;
+        double x_1 = coordinats.x_start + i*coordinats.step_x;
+        double x_2 = coordinats.x_start + (i+1)*coordinats.step_x;
+
+        uint y_1_value = DataList->value(i);
+        if (y_1_value<1500) y_1_value = 1500;
+        if (y_1_value>3000) y_1_value = 3000;
+        uint y_2_value = DataList->value(i+1);
+        if (y_2_value<1500) y_2_value = 1500;
+        if (y_2_value>3000) y_2_value = 3000;
+
+
+
+        double y_1 = coordinats.y_low - ((y_1_value-1500)*coordinats.step_y);
+        double y_2 = coordinats.y_low - ((y_2_value-1500)*coordinats.step_y);
+
+        ListLine->value(i)->setLine(QLineF( x_1, y_1, x_2, y_2 ));
+
+        //line->setLine(QLineF( x_1, y_1, x_2, y_2 ));
+        //graph_scene->addItem(line);
+
+    }
+
+    //    if(count_data_redraw == 59)
+    //        {
+    //            qDebug("Time elapsed: %d ms", t.elapsed());
+    //            count_data_redraw = 0;
+    //            disconnect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
+    //        }
+
+    //    count_data_redraw++;
 }

@@ -1,10 +1,18 @@
 #include "comport.h"
 #include <QDebug>
 
-ComPort::ComPort(QObject *parent) : QObject(parent)
+ComPort::ComPort(VoiceData* object_voice_data, QObject *parent ) : QObject(parent)
 {
     port = new QSerialPort();
+    voice_data = object_voice_data;
 }
+
+
+void ComPort::SetVoiceData(VoiceData* object_voice_data)
+{
+    voice_data = object_voice_data;
+}
+
 
 void ComPort::PortConnect(QString port_name)
 {
@@ -65,9 +73,10 @@ void ComPort::serialReceived()
         uchar data = val_adc[i];
         if((i+1)%2==0)
         {
-
             data_des = data_des|data;
-            qDebug()<<data_des;
+            while(voice_data->GetStatusBusy());
+            voice_data->AddData(data_des);
+            //qDebug()<<data_des;
         }
         else
         {
