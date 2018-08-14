@@ -50,6 +50,8 @@ public slots:
     void push_graph_right_arrow();
     void WidgetResized();
     void RedrawGraphic();
+    void StartDraw();
+    void StopDraw();
 
 
 private:

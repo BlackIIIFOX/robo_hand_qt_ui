@@ -16,7 +16,7 @@ void ComPort::SetVoiceData(VoiceData* object_voice_data)
 
 void ComPort::PortConnect(QString port_name)
 {
-    qDebug()<<port_name;
+    //qDebug()<<port_name;
     port->setPortName(port_name);
     port->setBaudRate(921600);
     //serial->setBaudRate(QSerialPort::Baud115200);

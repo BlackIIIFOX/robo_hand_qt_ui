@@ -50,8 +50,12 @@ SignalGraphics::SignalGraphics(int SetTimeDisplay, int freque, QWidget *parent) 
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
+
+    connect(com,SIGNAL(PortConnectReques(QString)),this,SLOT(StartDraw()));
+    connect(com,SIGNAL(PortDisconncetReques()),this,SLOT(StopDraw()));
+
     //timer->start(1000);
-    timer->start(16);
+
     //timer->start(32);
 }
 
@@ -108,6 +112,7 @@ void SignalGraphics::PrintBaseScene()
     graph_view = new QGraphicsView();
     graph_view->setMinimumSize(690,354);
     graph_scene = new QGraphicsScene(QRect(0,0,690,354));
+    graph_scene->setItemIndexMethod(QGraphicsScene::NoIndex);
     connect(this,SIGNAL(Resize()),this,SLOT(WidgetResized()));
     graph_view->setScene(graph_scene);
     graph_view->setRenderHint( QPainter::Antialiasing );
@@ -198,7 +203,7 @@ void SignalGraphics::PaintBaseItemInScene()
     //======Созданем список линий для графики=========
     //================================================
     ListLine = new  QList<QGraphicsLineItem*>;
-    for (int i = 0; i<ADCFreque*TimeDisplayMs/1000; i++)
+    for (int i = 0; i<ADCFreque*TimeDisplayMs/1000/16; i++)
     {
         QPen pen_line(Qt::black,2);
         QGraphicsLineItem* line = new QGraphicsLineItem();
@@ -235,8 +240,8 @@ void SignalGraphics::CalcGraphValue(int x_start, int x_stop, int y_high, int y_l
     coordinats.x_stop = x_stop;
     coordinats.y_high = y_high;
     coordinats.y_low = y_low;
-    coordinats.step_x = (((double)TimeDisplayMs/(double)ADCFreque)*(coordinats.x_stop - coordinats.x_start))/TimeDisplayMs;
-    coordinats.step_y = (coordinats.y_low - coordinats.y_high)/1500.0;
+    coordinats.step_x = ((((double)TimeDisplayMs/(double)ADCFreque)*(coordinats.x_stop - coordinats.x_start))/TimeDisplayMs)*((double)ADCFreque/2000.0);
+    coordinats.step_y = ((coordinats.y_low - coordinats.y_high)/1500.0);
 }
 
 
@@ -278,20 +283,23 @@ void SignalGraphics::WidgetResized()
 void SignalGraphics::RedrawGraphic()
 {
 
-    //    if(count_data_redraw == 0)
-    //    {
-    //        t.start();
-    //        t.restart();
-    //    }
+//        if(count_data_redraw == 0)
+//        {
+//            t.start();
+//            t.restart();
+//        }
     DataList->clear();
     while(voice_data->GetStatusBusy());
     voice_data->GetData(DataList, TimeDisplayMs);
 
     int count_list = DataList->count();
-    //qDebug()<<count_list;
-    for (int i = 0; i < count_list-1; i++)
-    {
+    //qDebug()<<count_data_redraw;
+    int i = 0;
 
+
+    for (int j = 0; j < count_list-1; j++)
+    {
+        if(j%16 != 0) continue;
         //coordinats.step_x;
         double x_1 = coordinats.x_start + i*coordinats.step_x;
         double x_2 = coordinats.x_start + (i+1)*coordinats.step_x;
@@ -309,18 +317,32 @@ void SignalGraphics::RedrawGraphic()
         double y_2 = coordinats.y_low - ((y_2_value-1500)*coordinats.step_y);
 
         ListLine->value(i)->setLine(QLineF( x_1, y_1, x_2, y_2 ));
+        i++;
+        //ListLine->
 
         //line->setLine(QLineF( x_1, y_1, x_2, y_2 ));
         //graph_scene->addItem(line);
 
     }
 
-    //    if(count_data_redraw == 59)
-    //        {
-    //            qDebug("Time elapsed: %d ms", t.elapsed());
-    //            count_data_redraw = 0;
-    //            disconnect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
-    //        }
+//        if(count_data_redraw == 236)
+//            {
+//                qDebug("Time elapsed: %d ms", t.elapsed());
+//                count_data_redraw = 0;
+//                disconnect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
+//            }
 
-    //    count_data_redraw++;
+//        count_data_redraw++;
+}
+
+
+void SignalGraphics::StartDraw()
+{
+    timer->start(16);
+}
+
+
+void SignalGraphics::StopDraw()
+{
+    timer->stop();
 }
