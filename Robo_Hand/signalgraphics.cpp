@@ -16,6 +16,8 @@ SignalGraphics::SignalGraphics(int SetTimeDisplay, int freque, QWidget *parent) 
     port->moveToThread(thread);//помешаем класс  в поток
     port->port->moveToThread(thread);//Помещаем сам порт в поток
     thread->start();
+    graph_scene=nullptr;
+
 
     connect(com,SIGNAL(PortConnectReques(QString)),port,SLOT(PortConnect(QString)));
     connect(com,SIGNAL(PortDisconncetReques()),port,SLOT(PortDisconnect()));
@@ -39,7 +41,6 @@ SignalGraphics::SignalGraphics(int SetTimeDisplay, int freque, QWidget *parent) 
 
     thread = new QThread();
     graph_view->moveToThread(thread);
-    //graph_scene->moveToThread(thread);
     thread->start();
 
     item_path=nullptr;
@@ -315,9 +316,11 @@ void SignalGraphics::CalcGraphValue(int x_start, int x_stop, int y_high, int y_l
 
 void SignalGraphics::WidgetResized()
 {
-
-    if(item_path!=nullptr)
-        graph_scene->removeItem(item_path);
+    //if(item_path!=nullptr)
+    //    graph_scene->clear();
+    if (graph_scene->items().count() != 0)
+            graph_scene->clear();
+    //    graph_scene->removeItem(item_path);
     int len_height =  graph_view->height();
     int len_width =  graph_view->width();
 
@@ -341,6 +344,8 @@ void SignalGraphics::WidgetResized()
     coordinats_arrow.len_width = len_width;
 
     CalcGraphValue(ZeroHLineX, EndHLineX, ZeroVLineY, EndVLineY);
+    //if (VLineGraph == nullptr)
+    PaintBaseItemInScene();
     PrintArrowGraph();
 
 //    //Перерисовка основных линий графика
