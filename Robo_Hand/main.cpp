@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
     //w.show();
 
 
-    SignalGraphics graph(4000,8000);
+    SignalGraphics graph(1000,8000);
 //    QThread* thread = new QThread();
 //    graph.moveToThread(thread);
 //    thread->start();

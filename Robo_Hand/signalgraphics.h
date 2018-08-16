@@ -22,12 +22,24 @@
 #include <QGraphicsItem>
 #include <QTimer>
 #include "voicedata.h"
+#include <QPolygon>
+#include <QPainterPath>
+#include <QTextDocument>
 
 struct GraphCoord
 {
     int x_start,x_stop; //Начальная и конечная точка по координате x
     int y_high,y_low;   //Верхняя и нижняя точка по координате y
     double step_x, step_y; //Шаг для точек по координатам x и y
+};
+
+struct GraphArrowCoord
+{
+    int ZeroVLineX = 20, ZeroVLineY = 10,
+            EndVLineX = 20, EndVLineY,
+            ZeroHLineX = 20, ZeroHLineY,
+            EndHLineX, EndHLineY;
+    int len_height, len_width;
 };
 
 
@@ -46,8 +58,8 @@ signals:
     void Resize();
 
 public slots:
-    void push_graph_left_arrow();
-    void push_graph_right_arrow();
+    void push_graph_start();
+    void push_graph_search();
     void WidgetResized();
     void RedrawGraphic();
     void StartDraw();
@@ -59,6 +71,7 @@ private:
     void PaintBaseItemInScene();
     void CreateWidget();
     void CalcGraphValue(int x_start, int x_stop, int y_high, int y_low);
+    void PrintArrowGraph();
     ComConnect* com;
     QVBoxLayout* layout_widget;
     QSpacerItem* down_spacer;
@@ -71,6 +84,11 @@ private:
     int TimeDisplayMs;      //Длительность сигнала выводимое на экран в мс
     int ADCFreque;          //Частота АЦП
     GraphCoord coordinats;
+    GraphArrowCoord coordinats_arrow;
+    QGraphicsPathItem *item_path;
+    bool StatePaintGraph;
+    int start_signal_voice, stop_signal_voice;
+
 
 
 

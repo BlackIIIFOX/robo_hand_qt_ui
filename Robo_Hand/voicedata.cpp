@@ -67,6 +67,7 @@ void VoiceData::GetData(QList<uint>* InputList, uint start_time_ms)
     //Основные расчеты индексов
     int index_start;
     index_start = LengthDataList - ((start_time_ms*FrequeADC)/1000);
+    //qDebug()<<index_start << " "<<LengthDataList;
     //if(index_start<0)
     //    index_start = 0;
 

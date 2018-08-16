@@ -19,5 +19,7 @@
         <file>icons8_disconnect.png</file>
         <file>icons8-сортировать-слева-направо-64.png</file>
         <file>icons8-сортировать-справа-налево-64.png</file>
+        <file>icons8-пауза-в-кружке-64.png</file>
+        <file>icons8-поиск-64.png</file>
     </qresource>
 </RCC>
