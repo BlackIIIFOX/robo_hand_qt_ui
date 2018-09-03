@@ -1,7 +1,9 @@
-#include "robohand.h"
+//#include "robohand.h"
 #include "signalgraphics.h"
 #include <QApplication>
 #include <QDesktopWidget>
+#include "handlersignal.h"
+#include <QDebug>
 
 
 int main(int argc, char *argv[])
@@ -10,6 +12,15 @@ int main(int argc, char *argv[])
     //RoboHand w;
     //w.show();
 
+//    Recognizer rec;
+//    QList<double> list;
+//    list<<-5<<2<<3<<5<<3;
+//    //qDebug()<<list;
+//    //rec.RecognizeWord(list);
+//    rec.AppendCepstralCoefToTem("Сжать","asd.wav", list);
+
+//    HandlerSignal signal;
+//    signal.show();
 
     SignalGraphics graph(1000,8000);
 //    QThread* thread = new QThread();
@@ -25,5 +36,7 @@ int main(int argc, char *argv[])
     );
     graph.setMinimumSize(QApplication::desktop()->width()/3,QApplication::desktop()->height()/2);
     graph.show();
+
+
     return a.exec();
 }

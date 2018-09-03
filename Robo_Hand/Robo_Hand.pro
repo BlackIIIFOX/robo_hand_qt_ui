@@ -37,7 +37,9 @@ SOURCES += \
     signalgraphics.cpp \
     comconnectwidget.cpp \
     comport.cpp \
-    voicedata.cpp
+    voicedata.cpp \
+    handlersignal.cpp \
+    recognizer.cpp
 
 HEADERS += \
         robohand.h \
@@ -52,7 +54,9 @@ HEADERS += \
     signalgraphics.h \
     comconnectwidget.h \
     comport.h \
-    voicedata.h
+    voicedata.h \
+    handlersignal.h \
+    recognizer.h
 
 FORMS += \
         robohand.ui

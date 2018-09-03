@@ -46,12 +46,12 @@ SignalGraphics::SignalGraphics(int SetTimeDisplay, int freque, QWidget *parent) 
     item_path=nullptr;
     StatePaintGraph = true;
 
-//    voice_data->AddData(1800);
-//    voice_data->AddData(2200);
-//    voice_data->AddData(2350);
-//    voice_data->AddData(1650);
-//    voice_data->AddData(1900);
-//    voice_data->AddData(1950);
+    //    voice_data->AddData(1800);
+    //    voice_data->AddData(2200);
+    //    voice_data->AddData(2350);
+    //    voice_data->AddData(1650);
+    //    voice_data->AddData(1900);
+    //    voice_data->AddData(1950);
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
@@ -207,15 +207,15 @@ void SignalGraphics::PaintBaseItemInScene()
     //================================================
     //======Созданем список линий для графики=========
     //================================================
-//    ListLine = new  QList<QGraphicsLineItem*>;
-//    for (int i = 0; i<ADCFreque*TimeDisplayMs/1000/16; i++)
-//    {
-//        QPen pen_line(Qt::black,2);
-//        QGraphicsLineItem* line = new QGraphicsLineItem();
-//        line->setPen(pen_line);
-//        ListLine->append(line);
-//        graph_scene->addItem(line);
-//    }
+    //    ListLine = new  QList<QGraphicsLineItem*>;
+    //    for (int i = 0; i<ADCFreque*TimeDisplayMs/1000/16; i++)
+    //    {
+    //        QPen pen_line(Qt::black,2);
+    //        QGraphicsLineItem* line = new QGraphicsLineItem();
+    //        line->setPen(pen_line);
+    //        ListLine->append(line);
+    //        graph_scene->addItem(line);
+    //    }
 
     //ListPoint->append();
 
@@ -246,56 +246,173 @@ void SignalGraphics::push_graph_start()
     StatePaintGraph = !StatePaintGraph;
 }
 
-#define SizeWindow 160
 void SignalGraphics::push_graph_search()
 {
     int count_list = DataList->count();
 
-    int average = 0;
-    for (int i = 0; i < count_list; i++)
+    if (count_list != 0)
     {
-        average = average + (int)DataList->value(i);
-    }
-    average = average/count_list;
-
-    qDebug()<<count_list<<"  "<<average;
-    QGraphicsLineItem* LineTime = new QGraphicsLineItem();
-    QPen pen_line(Qt::red,2);
-    LineTime->setPen(pen_line);
-    double y_coord = coordinats.y_low - ((average-1650)*coordinats.step_y);
-    LineTime->setLine(QLineF(coordinats.x_start, y_coord, coordinats.x_stop, y_coord));
-    graph_scene->addItem(LineTime);
-
-
-
-    for (int i = 0; i < count_list; i = i + SizeWindow)
-    {
-        int summ_result = 0;
-        int diff_value;
-        for(int j = 1; j < SizeWindow; j++)
+        int average = 0;
+        for (int i = 0; i < count_list; i++)
         {
-            diff_value = abs((int)DataList->value(j+i) - (int)DataList->value(j+i - 1));
-            summ_result = summ_result + diff_value;
+            average = average + (int)DataList->value(i);
+        }
+        average = average/count_list;
+
+        qDebug()<<count_list<<"  "<<average;
+        QGraphicsLineItem* LineTime = new QGraphicsLineItem();
+        QPen pen_line(Qt::red,2);
+        LineTime->setPen(pen_line);
+        double y_coord = coordinats.y_low - ((average-1650)*coordinats.step_y);
+        LineTime->setLine(QLineF(coordinats.x_start, y_coord, coordinats.x_stop, y_coord));
+        graph_scene->addItem(LineTime);
+
+
+        QList<int> list_result;
+
+        for (int i = 0; i < count_list; i = i + SizeWindow)
+        {
+            int summ_result = 0;
+            int diff_value;
+            for(int j = 1; j < SizeWindow; j++)
+            {
+                diff_value = abs(average - (int)DataList->value(j+i));
+                //diff_value = abs((int)DataList->value(j+i) - (int)DataList->value(j+i - 1));
+                summ_result = summ_result + diff_value;
+            }
+
+            list_result.append(summ_result);
+
+
+            //Рисование окон
+            QPen pen_line(Qt::red,2);
+            //Основные линии
+            QGraphicsTextItem* item_text = new QGraphicsTextItem();
+            QTextDocument* text = new QTextDocument(QString::number(summ_result));
+            item_text->setFont(QFont("Century Schoolbook",16));
+            item_text->setDocument(text);
+            double x_coord = coordinats.x_start + i*coordinats.step_x;
+            item_text->setPos(x_coord,coordinats_arrow.ZeroVLineY+150);
+            QGraphicsLineItem* LineTime = new QGraphicsLineItem();
+            LineTime->setPen(pen_line);
+            LineTime->setLine(QLineF(x_coord, coordinats_arrow.EndVLineY - 100, x_coord, coordinats_arrow.ZeroVLineY+100));
+            graph_scene->addItem(LineTime);
+            graph_scene->addItem(item_text);
+
+            //qDebug()<<summ_result;
         }
 
 
-        //Рисование окон
-        QPen pen_line(Qt::red,2);
-        //Основные линии
-        QGraphicsTextItem* item_text = new QGraphicsTextItem();
-        QTextDocument* text = new QTextDocument(QString::number(summ_result));
-        item_text->setFont(QFont("Century Schoolbook",16));
-        item_text->setDocument(text);
-        double x_coord = coordinats.x_start + i*coordinats.step_x;
-        item_text->setPos(x_coord,coordinats_arrow.ZeroVLineY+150);
-        QGraphicsLineItem* LineTime = new QGraphicsLineItem();
-        LineTime->setPen(pen_line);
-        LineTime->setLine(QLineF(x_coord, coordinats_arrow.EndVLineY - 100, x_coord, coordinats_arrow.ZeroVLineY+100));
-        graph_scene->addItem(LineTime);
-        graph_scene->addItem(item_text);
+        int index_start_voice, index_stop_voice;
+        bool flag_start_found = false;
+        bool flag_found_index = false;
+        QList<VoiceInterval> list_voice;
+        VoiceInterval voice_data;
+        for (int i = 0; i < list_result.count(); i++)
+        {
+            if ( list_result.value(i) + list_result.value(i+1) + list_result.value(i+2) < 12000 )
+            {
+                if ( flag_start_found == true )
+                {
+                    voice_data.index_stop_voice = i;
+                    list_voice.append(voice_data);
+                    //index_stop_voice = i * SizeWindow;
+                    flag_start_found = false;
+                    //break;
+                }
+            }
+            else
+            {
+                if ( flag_start_found == false )
+                {
+                    voice_data.index_start_voice = i;
+                    //index_start_voice = i * SizeWindow;
+                    flag_start_found = true;
+                }
+            }
+        }
 
-        //qDebug()<<summ_result;
+        int count_interavl = list_voice.count();
+
+        if (count_interavl > 1)
+        {
+            for (int i = 1; i < list_voice.count(); i++)
+            {
+                VoiceInterval voice_prev = list_voice.value(i-1);
+                VoiceInterval voice = list_voice.value(i);
+
+                if ( voice.index_start_voice - voice_prev.index_stop_voice < GapSize)
+                {
+                    VoiceInterval new_voice_interval;
+                    new_voice_interval.index_start_voice = voice_prev.index_start_voice;
+                    new_voice_interval.index_stop_voice = voice.index_stop_voice;
+
+                    list_voice.removeAt(i-1);
+                    list_voice.removeAt(i-1);
+                    list_voice.insert(i-1,new_voice_interval);
+                }
+            }
+
+            int index_max_len;
+            int max_len = 0;
+            for (int i = 0; i < list_voice.count(); i++)
+            {
+                if ( (list_voice.value(i).index_stop_voice - list_voice.value(i).index_start_voice) > max_len)
+                    index_max_len = i;
+            }
+
+            index_start_voice = list_voice.value(index_max_len).index_start_voice * SizeWindow;
+            index_stop_voice = list_voice.value(index_max_len).index_stop_voice * SizeWindow;
+
+        }
+        else
+        {
+            index_start_voice = list_voice.value(0).index_start_voice * SizeWindow;
+            index_stop_voice = list_voice.value(0).index_stop_voice * SizeWindow;
+        }
+
+
+        pen_line = QPen(Qt::blue,2);
+        double x_coord;
+
+        x_coord = coordinats.x_start + index_start_voice*coordinats.step_x;
+        QGraphicsLineItem* LineVoiceStart = new QGraphicsLineItem();
+        LineVoiceStart->setPen(pen_line);
+        LineVoiceStart->setLine(QLineF(x_coord, coordinats_arrow.EndVLineY - 100, x_coord, coordinats_arrow.ZeroVLineY+100));
+        graph_scene->addItem(LineVoiceStart);
+
+        x_coord = coordinats.x_start + index_stop_voice*coordinats.step_x;
+        QGraphicsLineItem* LineVoiceStop = new QGraphicsLineItem();
+        LineVoiceStop->setPen(pen_line);
+        LineVoiceStop->setLine(QLineF(x_coord, coordinats_arrow.EndVLineY - 100, x_coord, coordinats_arrow.ZeroVLineY+100));
+        graph_scene->addItem(LineVoiceStop);
+
+        QMessageBox::StandardButton reply;
+        reply = QMessageBox::question(this, "Обработка", "Продолжить обработку?",
+                                      QMessageBox::Yes|QMessageBox::No);
+        if (reply == QMessageBox::Yes) {
+
+            QList<int> list_signal_voice;
+            for (int i = index_start_voice; i < index_stop_voice; i++)
+            {
+                list_signal_voice.append((int)DataList->value(i));
+            }
+
+            HandlerSignal *hadle = new HandlerSignal(list_signal_voice);
+            hadle->setGeometry(0,0,this->width(),this->height());
+            hadle->show();
+        }
+        //connect(buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
+        //connect(buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
+
+        //QDialog
+        //HandlerSignal *hadle = new HandlerSignal();
+        //hadle->show();
+
     }
+
+    //HandlerSignal* signal = new HandlerSignal();
+    //signal->show();
 }
 
 void SignalGraphics::CalcGraphValue(int x_start, int x_stop, int y_high, int y_low)
@@ -319,7 +436,7 @@ void SignalGraphics::WidgetResized()
     //if(item_path!=nullptr)
     //    graph_scene->clear();
     if (graph_scene->items().count() != 0)
-            graph_scene->clear();
+        graph_scene->clear();
     //    graph_scene->removeItem(item_path);
     int len_height =  graph_view->height();
     int len_width =  graph_view->width();
@@ -348,15 +465,15 @@ void SignalGraphics::WidgetResized()
     PaintBaseItemInScene();
     PrintArrowGraph();
 
-//    //Перерисовка основных линий графика
-//    VLineGraph->setLine(QLine(ZeroVLineX, ZeroVLineY, EndVLineX, EndVLineY ));
-//    HLineGraph->setLine(QLine(ZeroHLineX, ZeroHLineY, EndHLineX, EndHLineY ));
+    //    //Перерисовка основных линий графика
+    //    VLineGraph->setLine(QLine(ZeroVLineX, ZeroVLineY, EndVLineX, EndVLineY ));
+    //    HLineGraph->setLine(QLine(ZeroHLineX, ZeroHLineY, EndHLineX, EndHLineY ));
 
-//    //Перериросвка линий стрелочек
-//    VLeftArrow->setLine(QLine(ZeroVLineX, ZeroVLineY, ZeroVLineX-5, ZeroVLineY+(len_height*0.05) ));
-//    VRightArrow->setLine(QLine(ZeroVLineX, ZeroVLineY, ZeroVLineX+5, ZeroVLineY+(len_height*0.05) ));
-//    HLeftArrow->setLine(QLine(EndHLineX, EndHLineY, EndHLineX - (len_width*0.03), EndHLineY + 5 ));
-//    HRightArrow->setLine(QLine(EndHLineX, EndHLineY, EndHLineX - (len_width*0.03), EndHLineY - 5));
+    //    //Перериросвка линий стрелочек
+    //    VLeftArrow->setLine(QLine(ZeroVLineX, ZeroVLineY, ZeroVLineX-5, ZeroVLineY+(len_height*0.05) ));
+    //    VRightArrow->setLine(QLine(ZeroVLineX, ZeroVLineY, ZeroVLineX+5, ZeroVLineY+(len_height*0.05) ));
+    //    HLeftArrow->setLine(QLine(EndHLineX, EndHLineY, EndHLineX - (len_width*0.03), EndHLineY + 5 ));
+    //    HRightArrow->setLine(QLine(EndHLineX, EndHLineY, EndHLineX - (len_width*0.03), EndHLineY - 5));
 
 }
 
@@ -380,11 +497,11 @@ void SignalGraphics::PrintArrowGraph()
 void SignalGraphics::RedrawGraphic()
 {
 
-//        if(count_data_redraw == 0)
-//        {
-//            t.start();
-//            t.restart();
-//        }
+    //        if(count_data_redraw == 0)
+    //        {
+    //            t.start();
+    //            t.restart();
+    //        }
     DataList->clear();
     while(voice_data->GetStatusBusy());
     voice_data->GetData(DataList, TimeDisplayMs);
@@ -425,15 +542,15 @@ void SignalGraphics::RedrawGraphic()
     }
     //graph_scene->clear();
 
-//    //Добавляем основные линии графика
-//    graph_scene->addItem(VLineGraph);
-//    graph_scene->addItem(HLineGraph);
+    //    //Добавляем основные линии графика
+    //    graph_scene->addItem(VLineGraph);
+    //    graph_scene->addItem(HLineGraph);
 
-//    //Добавляем линии стрелочек
-//    graph_scene->addItem(VLeftArrow);
-//    graph_scene->addItem(VRightArrow);
-//    graph_scene->addItem(HLeftArrow);
-//    graph_scene->addItem(HRightArrow);
+    //    //Добавляем линии стрелочек
+    //    graph_scene->addItem(VLeftArrow);
+    //    graph_scene->addItem(VRightArrow);
+    //    graph_scene->addItem(HLeftArrow);
+    //    graph_scene->addItem(HRightArrow);
 
 
 
@@ -441,25 +558,25 @@ void SignalGraphics::RedrawGraphic()
     PaintBaseItemInScene();
     PrintArrowGraph();
 
-//    if(item_path!=nullptr)
-//    {
-//        graph_scene->removeItem(item_path);
-//        qDebug()<<graph_scene->children();
-//        delete path;
+    //    if(item_path!=nullptr)
+    //    {
+    //        graph_scene->removeItem(item_path);
+    //        qDebug()<<graph_scene->children();
+    //        delete path;
 
-//    }
+    //    }
     path.addPolygon(poly);
     item_path = graph_scene->addPath(path);
 
 
-//        if(count_data_redraw == 236)
-//            {
-//                qDebug("Time elapsed: %d ms", t.elapsed());
-//                count_data_redraw = 0;
-//                disconnect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
-//            }
+    //        if(count_data_redraw == 236)
+    //            {
+    //                qDebug("Time elapsed: %d ms", t.elapsed());
+    //                count_data_redraw = 0;
+    //                disconnect(timer, SIGNAL(timeout()), this, SLOT(RedrawGraphic()));
+    //            }
 
-//        count_data_redraw++;
+    //        count_data_redraw++;
 }
 
 

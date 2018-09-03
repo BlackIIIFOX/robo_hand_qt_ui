@@ -25,23 +25,20 @@
 #include <QPolygon>
 #include <QPainterPath>
 #include <QTextDocument>
+#include "handlersignal.h"
+#include <QMessageBox>
 
-struct GraphCoord
+
+
+#define SizeWindow 160  //Длина окон(в элементах) для выделелния слов
+#define GapSize 10      //Максимальное расстояние между словами для объеденения их в одно
+
+
+
+struct VoiceInterval
 {
-    int x_start,x_stop; //Начальная и конечная точка по координате x
-    int y_high,y_low;   //Верхняя и нижняя точка по координате y
-    double step_x, step_y; //Шаг для точек по координатам x и y
+    int index_start_voice, index_stop_voice;
 };
-
-struct GraphArrowCoord
-{
-    int ZeroVLineX = 20, ZeroVLineY = 10,
-            EndVLineX = 20, EndVLineY,
-            ZeroHLineX = 20, ZeroHLineY,
-            EndHLineX, EndHLineY;
-    int len_height, len_width;
-};
-
 
 
 class SignalGraphics : public QWidget
@@ -91,7 +88,6 @@ private:
 
 
 
-
     //Для вывода графики
     QGraphicsView* graph_view;
     QGraphicsScene* graph_scene;
@@ -111,6 +107,7 @@ private:
     QGraphicsLineItem* HLeftArrow;
     QGraphicsLineItem* HRightArrow;
     QList<QGraphicsLineItem*>* ListLine;
+
 
 
 
